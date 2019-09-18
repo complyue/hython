@@ -25,6 +25,8 @@ import Hython.Environment (Environment)
 import Hython.Name
 import Hython.Ref
 
+import Control.Monad.Fail (MonadFail)
+
 data Object = None
             | Bool Bool
             | Bytes ByteString
@@ -99,7 +101,7 @@ instance HasAttributes Object where
     getObjAttrs (Module info)   = Just $ moduleDict info
     getObjAttrs _ = Nothing
 
-class (MonadFlow Object (Object -> m ()) m, MonadIO m) => MonadInterpreter m where
+class (MonadFlow Object (Object -> m ()) m, MonadIO m, MonadFail m) => MonadInterpreter m where
     evalBlock           :: [Statement] -> m ()
     invoke              :: Object -> String -> [Object] -> m Object
     new                 :: String -> [Object] -> m Object

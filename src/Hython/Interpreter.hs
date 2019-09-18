@@ -31,6 +31,8 @@ import Hython.Ref
 import Hython.Types
 import qualified Hython.Statement as Statement
 
+import Control.Monad.Fail (MonadFail)
+
 newtype Interpreter a = Interpreter { unwrap :: ExceptT String (ContT (Either String ()) (StateT InterpreterState IO)) a }
                             deriving (Functor, Applicative, Monad, MonadIO, MonadCont, MonadError String)
 
@@ -68,6 +70,17 @@ instance MonadInterpreter Interpreter where
         Interpreter . modify $ \s -> s { stateCurModule = info }
         unless (info `elem` modules) $
             Interpreter . modify $ \s -> s { stateModules = info : stateModules s }
+
+instance MonadFail Interpreter where
+    -- fail _ = undefined -- TBD
+    --
+    -- very strange error if `fail` supplied:
+    -- ‘fail’ is not a (visible) method of class ‘MonadFail’
+    -- just a warning when not supplied:
+    -- • No explicit implementation for
+    --     ‘Control.Monad.Fail.fail’
+    -- • In the instance declaration for ‘MonadFail Interpreter’
+    -- 
 
 defaultInterpreterState :: FilePath -> IO InterpreterState
 defaultInterpreterState path = do
